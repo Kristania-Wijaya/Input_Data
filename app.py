@@ -3,7 +3,6 @@ import pandas as pd
 import os
 
 st.set_page_config(page_title="Input Data", layout="centered")
-
 st.title("Form Input Data")
 
 FILE_EXCEL = "data_inputan.xlsx"
@@ -51,6 +50,26 @@ st.subheader("Data Tersimpan")
 if not df_data.empty:
     st.dataframe(df_data, use_container_width=True)
 
+    # ==========================
+    # HAPUS DATA
+    # ==========================
+    st.subheader("Hapus Data")
+
+    nik_hapus = st.selectbox(
+        "Pilih NIK yang akan dihapus",
+        df_data["NIK"].astype(str)
+    )
+
+    if st.button("🗑️ Hapus Data"):
+        df_data = df_data[df_data["NIK"].astype(str) != nik_hapus]
+        df_data.to_excel(FILE_EXCEL, index=False)
+
+        st.success(f"✅ Data dengan NIK {nik_hapus} berhasil dihapus")
+        st.rerun()
+
+    # ==========================
+    # Download
+    # ==========================
     with open(FILE_EXCEL, "rb") as f:
         st.download_button(
             "⬇️ Download Excel",
