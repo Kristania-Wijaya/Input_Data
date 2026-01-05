@@ -1,15 +1,20 @@
 import streamlit as st
 import pandas as pd
+import os
 
 st.set_page_config(page_title="Input Data", layout="centered")
 
 st.title("Form Input Data")
 
+FILE_EXCEL = "data_inputan.xlsx"
+
 # ==========================
-# Inisialisasi session_state
+# Load data dari Excel
 # ==========================
-if "data" not in st.session_state:
-    st.session_state.data = []
+if os.path.exists(FILE_EXCEL):
+    df_data = pd.read_excel(FILE_EXCEL)
+else:
+    df_data = pd.DataFrame(columns=["NIK", "No KK", "Nama"])
 
 # ==========================
 # Form Input
@@ -23,27 +28,34 @@ nama = st.text_input("Nama")
 if st.button("Simpan Data"):
     if not nik or not kk or not nama:
         st.error("⚠️ Semua field wajib diisi")
+    elif nik in df_data["NIK"].astype(str).values:
+        st.error("❌ NIK sudah terdaftar (data ganda)")
     else:
-        # Ambil semua NIK yang sudah ada
-        nik_terdaftar = [d["NIK"] for d in st.session_state.data]
+        data_baru = pd.DataFrame([{
+            "NIK": nik,
+            "No KK": kk,
+            "Nama": nama
+        }])
 
-        if nik in nik_terdaftar:
-            st.error("❌ NIK sudah terdaftar (data ganda tidak diperbolehkan)")
-        else:
-            st.session_state.data.append({
-                "NIK": nik,
-                "No KK": kk,
-                "Nama": nama
-            })
-            st.success("✅ Data berhasil disimpan")
+        df_data = pd.concat([df_data, data_baru], ignore_index=True)
+        df_data.to_excel(FILE_EXCEL, index=False)
+
+        st.success("✅ Data berhasil disimpan ke Excel")
+        st.rerun()
 
 # ==========================
 # Tampilkan Data
 # ==========================
 st.subheader("Data Tersimpan")
 
-if st.session_state.data:
-    df = pd.DataFrame(st.session_state.data)
-    st.dataframe(df, use_container_width=True)
+if not df_data.empty:
+    st.dataframe(df_data, use_container_width=True)
+
+    with open(FILE_EXCEL, "rb") as f:
+        st.download_button(
+            "⬇️ Download Excel",
+            f,
+            file_name="data_inputan.xlsx"
+        )
 else:
     st.info("Belum ada data")
