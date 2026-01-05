@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Input Data Penduduk", layout="centered")
+st.set_page_config(page_title="Input Data", layout="centered")
 
-st.title("Form Input Data Penduduk")
+st.title("Form Input Data")
 
 # ==========================
 # Inisialisasi session_state
@@ -22,14 +22,20 @@ nama = st.text_input("Nama")
 
 if st.button("Simpan Data"):
     if not nik or not kk or not nama:
-        st.warning("⚠️ Semua field wajib diisi")
+        st.error("⚠️ Semua field wajib diisi")
     else:
-        st.session_state.data.append({
-            "NIK": nik,
-            "No KK": kk,
-            "Nama": nama
-        })
-        st.success("✅ Data berhasil disimpan")
+        # Ambil semua NIK yang sudah ada
+        nik_terdaftar = [d["NIK"] for d in st.session_state.data]
+
+        if nik in nik_terdaftar:
+            st.error("❌ NIK sudah terdaftar (data ganda tidak diperbolehkan)")
+        else:
+            st.session_state.data.append({
+                "NIK": nik,
+                "No KK": kk,
+                "Nama": nama
+            })
+            st.success("✅ Data berhasil disimpan")
 
 # ==========================
 # Tampilkan Data
@@ -38,6 +44,6 @@ st.subheader("Data Tersimpan")
 
 if st.session_state.data:
     df = pd.DataFrame(st.session_state.data)
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 else:
     st.info("Belum ada data")
