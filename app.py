@@ -43,33 +43,31 @@ if st.button("Simpan Data"):
         st.rerun()
 
 # ==========================
-# Tampilkan Data
+# Tampilkan Data & Hapus
 # ==========================
 st.subheader("Data Tersimpan")
 
 if not df_data.empty:
-    st.dataframe(df_data, use_container_width=True)
+    col1, col2 = st.columns([3, 1])
 
-    # ==========================
-    # HAPUS DATA
-    # ==========================
-    st.subheader("Hapus Data")
+    with col1:
+        st.dataframe(df_data, use_container_width=True)
 
-    nik_hapus = st.selectbox(
-        "Pilih NIK yang akan dihapus",
-        df_data["NIK"].astype(str)
-    )
+    with col2:
+        st.markdown("### Hapus Data")
 
-    if st.button("🗑️ Hapus Data"):
-        df_data = df_data[df_data["NIK"].astype(str) != nik_hapus]
-        df_data.to_excel(FILE_EXCEL, index=False)
+        nik_hapus = st.selectbox(
+            "Pilih NIK",
+            df_data["NIK"].astype(str)
+        )
 
-        st.success(f"✅ Data dengan NIK {nik_hapus} berhasil dihapus")
-        st.rerun()
+        if st.button("🗑️ Hapus"):
+            df_data = df_data[df_data["NIK"].astype(str) != nik_hapus]
+            df_data.to_excel(FILE_EXCEL, index=False)
 
-    # ==========================
-    # Download
-    # ==========================
+            st.success("Data berhasil dihapus")
+            st.rerun()
+
     with open(FILE_EXCEL, "rb") as f:
         st.download_button(
             "⬇️ Download Excel",
