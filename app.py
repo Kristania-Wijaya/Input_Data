@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import os
 
-st.set_page_config(page_title="Input Data Penduduk", layout="centered")
-st.title("Form Input Data Penduduk")
+st.set_page_config(page_title="Input Data", layout="centered")
+st.title("Form Input Data")
 
-FILE_EXCEL = "data_penduduk.xlsx"
+FILE_EXCEL = "data_inputan.xlsx"
 
 # ==========================
 # Load / Init Excel
@@ -55,7 +55,7 @@ if st.button("Simpan Data"):
 # ==========================
 # TAMPILKAN DATABASE
 # ==========================
-st.subheader("Database Penduduk")
+st.subheader("Database")
 
 if not df_database.empty:
     st.dataframe(df_database, use_container_width=True)
@@ -64,7 +64,7 @@ if not df_database.empty:
         st.download_button(
             "⬇️ Download Excel",
             f,
-            file_name="data_penduduk.xlsx"
+            file_name="data_inputan.xlsx"
         )
 else:
     st.info("Database masih kosong")
