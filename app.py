@@ -2,22 +2,24 @@ import streamlit as st
 import pandas as pd
 import os
 
-st.set_page_config(page_title="Input Data", layout="centered")
+st.set_page_config(page_title="Input Data Penduduk", layout="centered")
+st.title("Form Input Data Penduduk")
 
-st.title("Form Input Data")
-
-FILE_EXCEL = "data_inputan.xlsx"
+FILE_EXCEL = "data_penduduk.xlsx"
 
 # ==========================
-# Load data dari Excel
+# Load / Init Excel
 # ==========================
 if os.path.exists(FILE_EXCEL):
-    df_data = pd.read_excel(FILE_EXCEL)
+    df_database = pd.read_excel(FILE_EXCEL, sheet_name="DATABASE")
 else:
-    df_data = pd.DataFrame(columns=["NIK", "No KK", "Nama"])
+    df_database = pd.DataFrame(columns=["NIK", "No KK", "Nama"])
+    with pd.ExcelWriter(FILE_EXCEL, engine="openpyxl") as writer:
+        df_database.to_excel(writer, sheet_name="DATABASE", index=False)
+        df_database.to_excel(writer, sheet_name="INPUT", index=False)
 
 # ==========================
-# Form Input
+# FORM INPUT
 # ==========================
 st.subheader("Input Data")
 
@@ -28,34 +30,41 @@ nama = st.text_input("Nama")
 if st.button("Simpan Data"):
     if not nik or not kk or not nama:
         st.error("⚠️ Semua field wajib diisi")
-    elif nik in df_data["NIK"].astype(str).values:
-        st.error("❌ NIK sudah terdaftar (data ganda)")
+    elif nik in df_database["NIK"].astype(str).values:
+        st.error("❌ NIK sudah terdaftar di DATABASE")
     else:
-        data_baru = pd.DataFrame([{
+        data_baru = {
             "NIK": nik,
             "No KK": kk,
             "Nama": nama
-        }])
+        }
 
-        df_data = pd.concat([df_data, data_baru], ignore_index=True)
-        df_data.to_excel(FILE_EXCEL, index=False)
+        df_database = pd.concat(
+            [df_database, pd.DataFrame([data_baru])],
+            ignore_index=True
+        )
 
-        st.success("✅ Data berhasil disimpan ke Excel")
+        # Simpan ke Excel (DATABASE + INPUT)
+        with pd.ExcelWriter(FILE_EXCEL, engine="openpyxl", mode="w") as writer:
+            df_database.to_excel(writer, sheet_name="DATABASE", index=False)
+            pd.DataFrame([data_baru]).to_excel(writer, sheet_name="INPUT", index=False)
+
+        st.success("✅ Data tersimpan ke DATABASE")
         st.rerun()
 
 # ==========================
-# Tampilkan Data
+# TAMPILKAN DATABASE
 # ==========================
-st.subheader("Data Tersimpan")
+st.subheader("Database Penduduk")
 
-if not df_data.empty:
-    st.dataframe(df_data, use_container_width=True)
+if not df_database.empty:
+    st.dataframe(df_database, use_container_width=True)
 
     with open(FILE_EXCEL, "rb") as f:
         st.download_button(
             "⬇️ Download Excel",
             f,
-            file_name="data_inputan.xlsx"
+            file_name="data_penduduk.xlsx"
         )
 else:
-    st.info("Belum ada data")
+    st.info("Database masih kosong")
