@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 st.set_page_config(page_title="Data Penduduk", layout="centered")
 
 st.title("🧾 Form Input Data Penduduk")
 
 # ===============================
-# Penyimpanan data (Session)
+# Session State
 # ===============================
 if "data_penduduk" not in st.session_state:
     st.session_state.data_penduduk = {}
@@ -14,7 +15,7 @@ if "data_penduduk" not in st.session_state:
 data_penduduk = st.session_state.data_penduduk
 
 # ===============================
-# Input Form
+# Input
 # ===============================
 nik = st.text_input("NIK")
 kk = st.text_input("No KK")
@@ -68,9 +69,15 @@ with col3:
         else:
             df = pd.DataFrame.from_dict(data_penduduk, orient="index")
             df.index.name = "NIK"
+
+            buffer = BytesIO()
+            df.to_excel(buffer, index=True)
+            buffer.seek(0)
+
             st.download_button(
                 label="📥 Download Excel",
-                data=df.to_excel(index=True),
-                file_name="data_penduduk.xlsx"
+                data=buffer,
+                file_name="data_penduduk.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-# Input_Data
+
